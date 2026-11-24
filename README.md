@@ -107,6 +107,7 @@ In VS Code, open the folder with the PlatformIO extension and pick the environme
 | `r` | Toggle raw ADC counts in the live display |
 | `d` | Dump registers, calibration, SD status and dropped-sample count |
 | `l` | List files on the SD card |
+| `e yes` | Delete all `BURN_*.CSV` files and `SUMMARY.CSV` so numbering restarts at `BURN_000`. Other files are kept |
 | `x` | Erase saved calibration |
 | `h` | Help |
 

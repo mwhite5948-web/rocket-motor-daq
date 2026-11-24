@@ -44,6 +44,7 @@
     r            Toggle raw ADC counts in the live display
     d            Dump registers, calibration and SD status
     l            List files on the SD card
+    e yes        Delete all BURN_*.CSV files and SUMMARY.CSV (other files kept)
     x            Erase saved calibration
     h            Help
   Calibrate in the direction the motor pushes. The calibration keeps its
@@ -58,6 +59,7 @@
 #include <SPI.h>
 #include <SD.h>
 #include <Preferences.h>
+#include <vector>
 
 // ======================================================================
 // User settings
@@ -369,6 +371,31 @@ void wbufAppend(const char *s, size_t n) {
   wlen += n;
 }
 
+// Deletes every BURN_nnn.CSV and SUMMARY.CSV; other files are left alone.
+void eraseBurns() {
+  if (!sdOk) { Serial.println(F("No SD card mounted.")); return; }
+  std::vector<String> victims;
+  File root = SD.open("/");
+  for (File f = root.openNextFile(); f; f = root.openNextFile()) {
+    const char *name = f.name();
+    if (name[0] == '/') name++;
+    int n;
+    if (!f.isDirectory() &&
+        (sscanf(name, "BURN_%d.CSV", &n) == 1 || strcmp(name, "SUMMARY.CSV") == 0))
+      victims.push_back(String("/") + name);
+    f.close();
+  }
+  root.close();
+  int removed = 0;
+  for (const String &p : victims) {
+    if (SD.remove(p)) removed++;
+    else Serial.printf("  could not delete %s\n", p.c_str());
+  }
+  findNextBurnNumber();
+  Serial.printf("Deleted %d of %d burn/summary files. Next file: /BURN_%03d.CSV\n",
+                removed, (int)victims.size(), nextBurnNum);
+}
+
 void listFiles() {
   if (!sdOk) { Serial.println(F("No SD card mounted.")); return; }
   File root = SD.open("/");
@@ -561,6 +588,7 @@ void printHelp() {
   Serial.println(F("  r          toggle raw counts"));
   Serial.println(F("  d          dump registers, calibration, SD status"));
   Serial.println(F("  l          list files on SD card"));
+  Serial.println(F("  e yes      delete all BURN_*.CSV files and SUMMARY.CSV"));
   Serial.println(F("  x          erase saved calibration"));
   Serial.println(F("  h          help"));
 }
@@ -624,6 +652,13 @@ void handleCommand(String line) {
     case 'r': showRaw = !showRaw; Serial.printf("Raw display %s\n", showRaw ? "on" : "off"); break;
     case 'd': dumpState(); break;
     case 'l': listFiles(); break;
+    case 'e': {
+      String arg = line.substring(1);
+      arg.trim();
+      if (arg.equalsIgnoreCase("yes")) eraseBurns();
+      else Serial.println(F("This deletes all BURN_*.CSV files and SUMMARY.CSV. Send  e yes  to confirm."));
+      break;
+    }
     case 'x': clearCalibration(); Serial.println(F("Calibration erased. Tare and calibrate again.")); break;
     case 'h': printHelp(); break;
     default:  Serial.println(F("Unknown command. Send h for help."));
