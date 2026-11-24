@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Rocket motor DAQ wiring</title>
+<!-- Source for RocketDAQ_wiring.pdf. Regenerate with:
+     msedge --headless --disable-gpu --no-pdf-header-footer --print-to-pdf=RocketDAQ_wiring.pdf RocketDAQ_wiring.html -->
+<style>
+  @page { size: letter; margin: 0.55in 0.6in; }
+  body { font-family: Helvetica, Arial, sans-serif; color: #222; font-size: 10.5pt; line-height: 1.35; margin: 0; }
+  h1 { font-size: 19pt; margin: 0 0 4px; }
+  .sub { color: #555; margin: 0 0 14px; }
+  h2 { font-size: 13pt; margin: 18px 0 6px; }
+  img.diagram { display: block; width: 100%; max-width: 7.3in; margin: 6px auto 0; }
+  table { border-collapse: collapse; width: 100%; margin: 6px 0 10px; font-size: 9.5pt; }
+  th, td { border: 1px solid #c8c8d4; padding: 4px 7px; text-align: left; vertical-align: top; }
+  th { background: #eceafc; }
+  table.sd th { background: #fdf1dc; }
+  ul { margin: 4px 0 8px; padding-left: 18px; }
+  li { margin-bottom: 4px; }
+  .page { page-break-after: always; }
+  .src { font-size: 9pt; color: #444; word-break: break-all; }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <h1>Rocket motor DAQ wiring</h1>
+  <p class="sub">SparkFun 200 kg S-type load cell (TAS501, SEN-14282), ADS1220 24-bit ADC breakout, Arduino Nano ESP32 (ABX00083)
+  and Adafruit MicroSD Card Breakout Board+ (ADA254). Ratiometric load cell hookup, thrust logged to the SD card.</p>
+
+  <img class="diagram" src="RocketDAQ_wiring.svg" alt="Wiring diagram">
+</div>
+
+<div class="page">
+  <h2>Load cell to ADS1220</h2>
+  <table>
+    <tr><th>Load cell wire</th><th>Function</th><th>ADS1220 pin(s)</th></tr>
+    <tr><td>Red</td><td>Excitation + (E+)</td><td>AVDD and REFP0</td></tr>
+    <tr><td>Black</td><td>Excitation - (E-)</td><td>AGND and REFN0</td></tr>
+    <tr><td>Green</td><td>Signal + (S+)</td><td>AIN1</td></tr>
+    <tr><td>White</td><td>Signal - (S-)</td><td>AIN2</td></tr>
+    <tr><td>Shield</td><td>Cable shield (not a bridge wire)</td><td>AGND, at the ADC end only</td></tr>
+  </table>
+
+  <h2>ADS1220 to Nano ESP32 (default SPI bus)</h2>
+  <table>
+    <tr><th>ADS1220 pin</th><th>Nano ESP32 pin</th><th>ESP32-S3 GPIO</th><th>Notes</th></tr>
+    <tr><td>CS</td><td>D10</td><td>GPIO21</td><td>Chip select, active low</td></tr>
+    <tr><td>SCLK</td><td>D13 / SCK</td><td>GPIO48</td><td>SPI mode 1; also drives the built-in LED</td></tr>
+    <tr><td>DIN</td><td>D11 / COPI (MOSI)</td><td>GPIO38</td><td></td></tr>
+    <tr><td>DOUT</td><td>D12 / CIPO (MISO)</td><td>GPIO47</td><td></td></tr>
+    <tr><td>DRDY</td><td>D2</td><td>GPIO5</td><td>Interrupt input; falls when each conversion is ready (1000/s)</td></tr>
+    <tr><td>3V3 / GND</td><td>3V3 / GND</td><td>-</td><td>Powers the ADS1220 and the load cell excitation</td></tr>
+  </table>
+
+  <h2>Adafruit MicroSD Breakout Board+ (ADA254) to Nano ESP32 (second SPI bus)</h2>
+  <table class="sd">
+    <tr><th>ADA254 pin</th><th>Nano ESP32 pin</th><th>ESP32-S3 GPIO</th><th>Notes</th></tr>
+    <tr><td>5V</td><td>3V3</td><td>-</td><td>Power input. The on-board low-dropout regulator accepts 3.3-6 V.</td></tr>
+    <tr><td>GND</td><td>GND</td><td>-</td><td></td></tr>
+    <tr><td>CLK</td><td>D5</td><td>GPIO8</td><td>SD SPI clock</td></tr>
+    <tr><td>DI</td><td>D6</td><td>GPIO9</td><td>Data into the card (COPI / MOSI)</td></tr>
+    <tr><td>DO</td><td>D7</td><td>GPIO10</td><td>Data out of the card (CIPO / MISO)</td></tr>
+    <tr><td>CS</td><td>D4</td><td>GPIO7</td><td>Chip select, active low</td></tr>
+    <tr><td>CD</td><td>D8</td><td>GPIO17</td><td>Card detect. Shorted to GND when no card is inserted. The firmware enables the internal pull-up, so it reads high with a card in.</td></tr>
+    <tr><td>3V</td><td>not connected</td><td>-</td><td>Output of the breakout's regulator</td></tr>
+  </table>
+
+  <h2>Why the SD card has its own SPI bus</h2>
+  <ul>
+    <li>An SD card can stall for tens to hundreds of milliseconds while it writes internally. On a shared bus that would hold up the ADS1220 reads and lose thrust samples during a burn.</li>
+    <li>The ESP32-S3 has a second free SPI controller (HSPI) that can be routed to any GPIO, so the SD card runs on D4-D7 independently. The ADS1220 keeps the default SPI pins.</li>
+    <li>The firmware also buffers about 8 s of samples in RAM between the ADC task and the SD writer, so a slow card cannot cause dropped samples.</li>
+  </ul>
+</div>
+
+<div>
+  <h2>Power</h2>
+  <ul>
+    <li><b>3.3 V logic throughout.</b> The Nano ESP32, ADS1220 and the ADA254 logic all run at 3.3 V. The ADA254 has its own level shifter and regulator, so it connects directly.</li>
+    <li><b>SD card current.</b> An SD card can draw 100 mA or more while writing. The Nano ESP32's 3V3 regulator can supply this, but keep the 3V3 and GND wires to the breakout short and solid.</li>
+    <li><b>Field power.</b> Power the Nano from a USB power bank or 6-21 V on VIN. The DAQ runs and records without a computer attached, and the on-board RGB LED shows its state.</li>
+    <li><b>Excitation.</b> The load cell bridge is powered from the 3V3 rail. A typical 350 ohm bridge draws about 10 mA at 3.3 V.</li>
+  </ul>
+
+  <h2>Status LED (Nano ESP32 on-board RGB)</h2>
+  <table>
+    <tr><th>Color</th><th>Meaning</th></tr>
+    <tr><td>Blue</td><td>Not calibrated, or taring / calibrating (keep the stand still)</td></tr>
+    <tr><td>Green</td><td>Armed: calibrated, SD card mounted, waiting for thrust above 1 lbf</td></tr>
+    <tr><td>Red, solid</td><td>Recording a burn</td></tr>
+    <tr><td>Red, blinking</td><td>SD card missing or failed. Thrust is still measured and summarised on Serial, but not saved.</td></tr>
+  </table>
+
+  <h2>ADS1220 register settings</h2>
+  <table>
+    <tr><th>Setting</th><th>Value</th><th>Reason</th></tr>
+    <tr><td>Input mux</td><td>AIN1 (+) / AIN2 (-), MUX = 0011</td><td>Matches the wiring above</td></tr>
+    <tr><td>Gain</td><td>128, PGA enabled</td><td>The bridge signal is only millivolts</td></tr>
+    <tr><td>Reference</td><td>External REFP0/REFN0, VREF = 01</td><td>Ratiometric: supply drift cancels out</td></tr>
+    <tr><td>Data rate</td><td>1000 SPS, normal mode, continuous</td><td>Resolves the thrust curve of small and mid-size motors</td></tr>
+    <tr><td>50/60 Hz filter</td><td>Off</td><td>It only works at 20 SPS</td></tr>
+  </table>
+
+  <h2>Mechanical and wiring notes</h2>
+  <ul>
+    <li><b>Thrust direction.</b> The S-beam measures tension and compression. Calibrate by loading the cell in the same direction the motor pushes. The calibration keeps its sign, so thrust reads positive.</li>
+    <li><b>Shield.</b> Ground the shield at the ADS1220 end only, to avoid a ground loop.</li>
+    <li><b>Capacity.</b> 200 kg (about 441 lbf, 1961 N). The firmware warns if a burn's peak exceeds this.</li>
+    <li><b>Use the D-names in code</b> (D4, D10 and so on) so the pins are right in either Nano ESP32 pin-numbering mode.</li>
+  </ul>
+
+  <h2>Sources</h2>
+  <p class="src">TAS501 datasheet: https://www.mouser.com/datasheet/2/813/TAS501-1223873.pdf<br>
+  Arduino Nano ESP32 datasheet (ABX00083): https://cdn.sparkfun.com/assets/a/4/b/6/8/ABX00083-datasheet.pdf<br>
+  Arduino Nano ESP32 cheat sheet: https://docs.arduino.cc/tutorials/nano-esp32/cheat-sheet<br>
+  Adafruit MicroSD Breakout Board+ (ADA254): https://www.adafruit.com/product/254<br>
+  Adafruit MicroSD breakout tutorial: https://learn.adafruit.com/adafruit-micro-sd-breakout-board-card-tutorial</p>
+</div>
+
+</body>
+</html>

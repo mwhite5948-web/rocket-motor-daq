@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 700" width="900" height="700" font-family="Helvetica, Arial, sans-serif" font-size="13">
+  <rect x="0" y="0" width="900" height="700" fill="#ffffff"/>
+  <style>
+    .box   { stroke-width: 1.2; }
+    .pin   { fill: #3b2f8f; }
+    .npin  { fill: #1e6b4f; }
+    .spin  { fill: #7a4a00; }
+    .title { font-weight: bold; font-size: 14px; }
+    .w     { fill: none; stroke-width: 2.4; }
+    .sig   { fill: none; stroke: #777; stroke-width: 1.3; }
+    .dot   { stroke: none; }
+  </style>
+
+  <!-- ===================== Boxes ===================== -->
+  <!-- TAS501 load cell -->
+  <rect class="box" x="20" y="40" width="190" height="340" rx="8" fill="#f1efe9" stroke="#999"/>
+  <text class="title" x="36" y="70" fill="#333">TAS501 load cell</text>
+  <text x="195" y="100" text-anchor="end" fill="#333">Red (E+)</text>
+  <text x="195" y="175" text-anchor="end" fill="#333">Green (S+)</text>
+  <text x="195" y="225" text-anchor="end" fill="#333">White (S-)</text>
+  <text x="195" y="310" text-anchor="end" fill="#333">Black (E-)</text>
+  <text x="195" y="360" text-anchor="end" fill="#333">Shield</text>
+
+  <!-- ADS1220 -->
+  <rect class="box" x="340" y="20" width="190" height="340" rx="8" fill="#eceafc" stroke="#6b5fc7"/>
+  <text class="title" x="435" y="45" text-anchor="middle" fill="#3b2f8f">ADS1220</text>
+  <text class="pin" x="352" y="75">AVDD</text>
+  <text class="pin" x="352" y="125">REFP0</text>
+  <text class="pin" x="352" y="175">AIN1</text>
+  <text class="pin" x="352" y="225">AIN2</text>
+  <text class="pin" x="352" y="285">REFN0</text>
+  <text class="pin" x="352" y="335">AGND</text>
+  <text class="pin" x="518" y="75"  text-anchor="end">CS</text>
+  <text class="pin" x="518" y="115" text-anchor="end">SCLK</text>
+  <text class="pin" x="518" y="155" text-anchor="end">DIN</text>
+  <text class="pin" x="518" y="195" text-anchor="end">DOUT</text>
+  <text class="pin" x="518" y="235" text-anchor="end">DRDY</text>
+  <text class="pin" x="518" y="295" text-anchor="end">3V3</text>
+  <text class="pin" x="518" y="335" text-anchor="end">GND</text>
+
+  <!-- Adafruit MicroSD breakout board+ (ADA254) -->
+  <rect class="box" x="340" y="400" width="190" height="270" rx="8" fill="#fdf1dc" stroke="#c98a1b"/>
+  <text class="title" x="435" y="423" text-anchor="middle" fill="#7a4a00">Adafruit MicroSD</text>
+  <text class="title" x="435" y="441" text-anchor="middle" fill="#7a4a00">Breakout+ (ADA254)</text>
+  <text class="spin" x="518" y="475" text-anchor="end">5V (in)</text>
+  <text class="spin" x="518" y="500" text-anchor="end">GND</text>
+  <text class="spin" x="518" y="535" text-anchor="end">CLK</text>
+  <text class="spin" x="518" y="565" text-anchor="end">DI</text>
+  <text class="spin" x="518" y="595" text-anchor="end">DO</text>
+  <text class="spin" x="518" y="625" text-anchor="end">CS</text>
+  <text class="spin" x="518" y="655" text-anchor="end">CD</text>
+  <text class="spin" x="352" y="475" fill="#a08a66">3V (out)</text>
+  <text x="352" y="492" font-size="11" fill="#a08a66">not connected</text>
+  <text x="352" y="625" font-size="11" fill="#a08a66">on-board 3.3 V LDO</text>
+  <text x="352" y="640" font-size="11" fill="#a08a66">and level shifter</text>
+
+  <!-- Arduino Nano ESP32 -->
+  <text class="title" x="745" y="45" text-anchor="middle" fill="#333">Arduino Nano ESP32</text>
+  <rect class="box" x="670" y="55" width="160" height="615" rx="8" fill="#e3f4ec" stroke="#3a9d78"/>
+  <text class="npin" x="682" y="75">D10 (CS)</text>
+  <text class="npin" x="682" y="115">D13 / SCK</text>
+  <text class="npin" x="682" y="155">D11 / COPI</text>
+  <text class="npin" x="682" y="195">D12 / CIPO</text>
+  <text class="npin" x="682" y="235">D2</text>
+  <text class="npin" x="682" y="295">3V3</text>
+  <text class="npin" x="682" y="335">GND</text>
+  <text class="npin" x="682" y="535">D5 (SD SCK)</text>
+  <text class="npin" x="682" y="565">D6 (SD COPI)</text>
+  <text class="npin" x="682" y="595">D7 (SD CIPO)</text>
+  <text class="npin" x="682" y="625">D4 (SD CS)</text>
+  <text class="npin" x="682" y="655">D8 (card detect)</text>
+  <text x="682" y="380" font-size="11" fill="#5c8c79">On-board RGB LED</text>
+  <text x="682" y="395" font-size="11" fill="#5c8c79">shows DAQ status</text>
+
+  <!-- ===================== Load cell to ADS1220 ===================== -->
+  <!-- Red E+ to AVDD and REFP0 -->
+  <path class="w" stroke="#e04545" d="M210 95 H310 M310 70 V120 M310 70 H340 M310 120 H340"/>
+  <circle class="dot" cx="310" cy="95" r="4" fill="#e04545"/>
+  <!-- Green S+ -->
+  <path class="w" stroke="#5c9a2c" d="M210 170 H340"/>
+  <!-- White S- -->
+  <path class="w" stroke="#b8b8b8" d="M210 220 H340"/>
+  <!-- Black E- to REFN0 and AGND (dark gray for visibility) -->
+  <path class="w" stroke="#555" d="M210 305 H310 M310 280 V330 M310 280 H340 M310 330 H340"/>
+  <circle class="dot" cx="310" cy="305" r="4" fill="#555"/>
+  <!-- Shield to AGND (ADC end only) -->
+  <path fill="none" stroke="#777" stroke-width="1.6" stroke-dasharray="5 4" d="M210 355 H325 V330"/>
+  <circle class="dot" cx="325" cy="330" r="4" fill="#555"/>
+
+  <!-- ===================== ADS1220 to Nano (default SPI) ===================== -->
+  <path class="sig" d="M530 70 H670 M530 110 H670 M530 150 H670 M530 190 H670 M530 230 H670"/>
+  <!-- 3V3 and GND -->
+  <path class="w" style="stroke:#d9480f;stroke-width:2" d="M530 290 H670"/>
+  <path class="w" style="stroke:#333;stroke-width:2" d="M530 330 H670"/>
+
+  <!-- ===================== MicroSD to Nano (second SPI bus) ===================== -->
+  <!-- SD 5V(in) to 3V3 rail, with a hop over the GND line -->
+  <path class="w" style="stroke:#d9480f;stroke-width:2" d="M530 470 H580 V336 A6 6 0 0 0 580 324 V290"/>
+  <circle class="dot" cx="580" cy="290" r="4" fill="#d9480f"/>
+  <!-- SD GND to GND -->
+  <path class="w" style="stroke:#333;stroke-width:2" d="M530 495 H620 V330"/>
+  <circle class="dot" cx="620" cy="330" r="4" fill="#333"/>
+  <!-- SD signals -->
+  <path class="sig" style="stroke:#c98a1b" d="M530 530 H670 M530 560 H670 M530 590 H670 M530 620 H670 M530 650 H670"/>
+
+  <text x="450" y="695" text-anchor="middle" font-size="11" fill="#888">Black wire drawn dark gray for visibility. Dots are junctions; the arc is a crossing with no connection.</text>
+</svg>
