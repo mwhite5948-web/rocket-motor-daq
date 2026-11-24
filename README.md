@@ -103,6 +103,7 @@ In VS Code, open the folder with the PlatformIO extension and pick the environme
 |---|---|
 | `t` | Tare (zero) |
 | `c <kg>` / `c <lb> lb` | Calibrate with a known mass |
+| `i` | Invert the thrust direction (e.g. calibrated in tension, testing in compression). Saved to flash |
 | `r` | Toggle raw ADC counts in the live display |
 | `d` | Dump registers, calibration, SD status and dropped-sample count |
 | `l` | List files on the SD card |

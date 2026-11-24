@@ -40,13 +40,15 @@
     t            Tare (zero) with the motor mounted and nothing firing
     c <kg>       Calibrate with a known mass, e.g.  c 20
     c <lb> lb    Calibrate with a known mass in pounds, e.g.  c 25 lb
+    i            Invert the thrust direction (tension <-> compression), saved
     r            Toggle raw ADC counts in the live display
     d            Dump registers, calibration and SD status
     l            List files on the SD card
     x            Erase saved calibration
     h            Help
   Calibrate in the direction the motor pushes. The calibration keeps its
-  sign, so thrust reads positive whichever way the cell is loaded.
+  sign, so thrust reads positive whichever way the cell is loaded. If you
+  calibrated in the other direction, send  i  to flip the sign.
 
   The stand auto-tares at power-up (AUTO_TARE_ON_BOOT), so mount the motor
   first, then power the DAQ. Calibration is kept in flash.
@@ -555,6 +557,7 @@ void printHelp() {
   Serial.println(F("  t          tare (motor mounted, not firing)"));
   Serial.println(F("  c <kg>     calibrate with known mass, e.g. c 20"));
   Serial.println(F("  c <lb> lb  calibrate with known mass in pounds, e.g. c 25 lb"));
+  Serial.println(F("  i          invert thrust direction (tension <-> compression)"));
   Serial.println(F("  r          toggle raw counts"));
   Serial.println(F("  d          dump registers, calibration, SD status"));
   Serial.println(F("  l          list files on SD card"));
@@ -611,6 +614,13 @@ void handleCommand(String line) {
       startCollect(COLLECT_CAL);
       break;
     }
+    case 'i':
+      if (countsPerKg == 0) { Serial.println(F("Not calibrated yet.")); break; }
+      countsPerKg = -countsPerKg;
+      saveCalibration();
+      trigFill = 0; trigSum = 0; trigIdx = 0;  // restart the trigger filter
+      Serial.printf("Direction inverted and saved. Scale factor now %.2f counts/kg\n", countsPerKg);
+      break;
     case 'r': showRaw = !showRaw; Serial.printf("Raw display %s\n", showRaw ? "on" : "off"); break;
     case 'd': dumpState(); break;
     case 'l': listFiles(); break;
